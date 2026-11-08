@@ -9,7 +9,7 @@
 | 环节 | 用什么 | 花多少钱 |
 |---|---|---|
 | 行情数据 | AkShare（开源免费）+ 东财前复权 | 0 |
-| LLM 点评 | DeepSeek 免费模型（Magpie LongCat 渠道，备选 OpenCode Zen 免费模型） | 0 |
+| LLM 点评 | NVIDIA Nemotron 3 Ultra 550B（NVIDIA NIM 经 Magpie，备选 LongCat） | 0 |
 | 运行环境 | 本地电脑，或免费云机 | 0 |
 | 代码依赖 | Python 3.10+ 标准库，零第三方包 | 0 |
 | 订阅 / API Key | 不需要付费订阅；免费渠道自带额度 | 0 |

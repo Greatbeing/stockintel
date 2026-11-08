@@ -25,8 +25,8 @@ v1 不新建数据拉取.
 - 数据不支持的判断写"数据不足", 不要猜.
 - 输出 Markdown, 每只票固定四节.
 
-LLM: opencode run --model magpie/longcat/LongCat-2.5
-(免费模型，Magpie LongCat；备选 opencode/deepseek-v4.1-flash-free。如遇 free usage limit 属免费额度耗尽，等恢复或换 --model 指定其他免费模型，脚本绝不静默换模型).
+LLM: opencode run --model magpie/nvidia/nvidia/nemotron-3-ultra-550b-a55b
+(免费模型，NVIDIA NIM 经 Magpie（Nemotron 3 Ultra 550B）；备选 Magpie LongCat（magpie/longcat/LongCat-2.5）。如遇 free usage limit 属免费额度耗尽，等恢复或换 --model 指定其他免费模型，脚本绝不静默换模型).
 全程不放任何 key / token / 密码.
 
 用法:
@@ -46,7 +46,7 @@ import time
 # （例如部署在原有 quant 工作区时，设为该工作区的 results/daily 目录）。
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RESULTS_DIR = os.environ.get("STOCKINTEL_RESULTS_DIR", os.path.join(REPO_ROOT, "data"))
-DEFAULT_MODEL = "magpie/longcat/LongCat-2.5"
+DEFAULT_MODEL = "magpie/nvidia/nvidia/nemotron-3-ultra-550b-a55b"
 BATCH_SIZE = 3
 MODEL_TIMEOUT = 240  # seconds per opencode call
 

@@ -5,7 +5,7 @@
 #   QUANT_DIR      量化工作区根目录（默认 /data/workspace/quant）
 #   RESULTS_DIR    每日结果目录（默认 $QUANT_DIR/results/daily）
 #   STOCKINTEL_DIR stockintel 目录（默认 $QUANT_DIR/stockintel）
-#   MODEL          复盘模型（默认 magpie/longcat/LongCat-2.5，Magpie 免费路由）
+#   MODEL          复盘模型（默认 magpie/nvidia/nvidia/nemotron-3-ultra-550b-a55b，NVIDIA NIM 经 Magpie）
 #
 # 用法：bash deploy/run_daily.sh [YYYYMMDD]（默认当天，Asia/Shanghai）
 # 退出码：0 成功；1 复盘或组装失败（不写报告）；2 当日 verify 缺失（休市或选股任务未产出）。
@@ -14,7 +14,7 @@ set -u
 QUANT_DIR="${QUANT_DIR:-/data/workspace/quant}"
 RESULTS_DIR="${RESULTS_DIR:-$QUANT_DIR/results/daily}"
 STOCKINTEL_DIR="${STOCKINTEL_DIR:-$QUANT_DIR/stockintel}"
-MODEL="${MODEL:-magpie/longcat/LongCat-2.5}"
+MODEL="${MODEL:-magpie/nvidia/nvidia/nemotron-3-ultra-550b-a55b}"
 
 cd "$STOCKINTEL_DIR" || exit 1
 

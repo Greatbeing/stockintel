@@ -19,5 +19,5 @@ output:
   log: logs/build.log
 
 model:
-  name: magpie/longcat/LongCat-2.5
+  name: magpie/nvidia/nvidia/nemotron-3-ultra-550b-a55b
   used_in_m1: false
