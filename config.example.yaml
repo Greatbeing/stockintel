@@ -1,0 +1,23 @@
+# stockintel 配置示例
+# 用法：复制为 config.yaml，填好日期与数据路径，然后运行：
+#   python3 report/build_report.py
+# 数据文件（verify JSON / review Markdown / buy_signals CSV）由你自己的筛股流程产出；
+# 本仓库不提供真实行情数据。
+
+project: stockintel
+version: M1
+date: "20261106"
+quant_root: .
+
+inputs:
+  verify: data/verify_20261106.json
+  review: data/review_20261106.md
+  buy_signals: data/buy_signals_20261106.csv
+
+output:
+  report: data/report_20261106.md
+  log: logs/build.log
+
+model:
+  name: opencode/deepseek-v4.1-flash-free
+  used_in_m1: false

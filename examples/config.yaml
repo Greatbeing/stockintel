@@ -1,0 +1,22 @@
+# stockintel 示例配置：跑通 examples/ 里 3 只 synthetic 数据
+# 运行（在仓库根目录）：
+#   python3 report/build_report.py --config examples/config.yaml
+# 输出：examples/report_example.md
+
+project: stockintel
+version: M1
+date: "20261106"
+quant_root: examples
+
+inputs:
+  verify: verify_example.json
+  review: review_example.md
+  buy_signals: buy_signals_example.csv
+
+output:
+  report: report_example.md
+  log: logs/build.log
+
+model:
+  name: opencode/deepseek-v4.1-flash-free
+  used_in_m1: false
