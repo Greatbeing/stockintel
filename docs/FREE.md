@@ -5,7 +5,7 @@
 | 环节 | 免费来源 | 限制 |
 |---|---|---|
 | 行情 | AkShare 开源库 + 东财公开接口 | 免费接口有频率限制；不保证实时性 |
-| LLM | DeepSeek 免费模型（OpenCode Zen / Magpie 免费渠道） | 免费额度有限，耗尽即停；约 20 秒/次 |
+| LLM | DeepSeek 免费模型（Magpie LongCat 渠道；备选 OpenCode Zen 免费模型 `opencode/deepseek-v4.1-flash-free`，用 `--model` 指定） | 免费额度有限，耗尽即停；约 20 秒/次 |
 | 运行 | 本地电脑 / 免费云机（如 InstaBox 免费套餐） | 免费云机按量休眠，不适合 24 小时服务 |
 | 依赖 | Python 标准库 | 无 |
 

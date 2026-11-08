@@ -19,5 +19,5 @@ output:
   log: logs/build.log
 
 model:
-  name: opencode/deepseek-v4.1-flash-free
+  name: magpie/longcat/LongCat-2.5
   used_in_m1: false

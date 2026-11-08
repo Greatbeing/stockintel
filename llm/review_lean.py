@@ -6,7 +6,7 @@ review_lean.py -- 精简版 A 股每日文字复盘 (A-share only, v1.1)。
 v1.1 相对 v1 的改动：
 - 入场价统一用 exec_price（实际成交价），没有才回退到 prev_entry_price（信号价）。
 - "当日浮动"标签改为"持仓浮盈"：该值实际就是 verify.unreal（持仓浮盈），不是当日涨跌。
-- 数据目录不再写死：默认取仓库根目录下的 data/，可用 STOCKINTEL_QUANT_DIR 环境变量覆盖。
+- 数据目录不再写死：默认取仓库根目录下的 data/，可用 STOCKINTEL_RESULTS_DIR 环境变量指定。
 
 借鉴思路 (只借思路, 不跑原仓库):
 - ZhuLinsen/daily_stock_analysis strategies/chan_theory.yaml:
@@ -25,8 +25,8 @@ v1 不新建数据拉取.
 - 数据不支持的判断写"数据不足", 不要猜.
 - 输出 Markdown, 每只票固定四节.
 
-LLM: opencode run --model opencode/deepseek-v4.1-flash-free
-(免费模型，约 20 秒/次；如遇 free usage limit 属免费额度耗尽，等恢复或换 --model 指定其他免费模型，脚本绝不静默换模型).
+LLM: opencode run --model magpie/longcat/LongCat-2.5
+(免费模型，Magpie LongCat；备选 opencode/deepseek-v4.1-flash-free。如遇 free usage limit 属免费额度耗尽，等恢复或换 --model 指定其他免费模型，脚本绝不静默换模型).
 全程不放任何 key / token / 密码.
 
 用法:
@@ -42,12 +42,11 @@ import subprocess
 import sys
 import time
 
-# 数据目录：默认取仓库根目录下的 data/，可用环境变量 STOCKINTEL_QUANT_DIR 覆盖
-# （例如部署在原有 quant 工作区时，设为该工作区的根目录）。
+# 数据目录：默认取仓库根目录下的 data/，可用环境变量 STOCKINTEL_RESULTS_DIR 指定
+# （例如部署在原有 quant 工作区时，设为该工作区的 results/daily 目录）。
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-QUANT_DIR = os.environ.get("STOCKINTEL_QUANT_DIR", REPO_ROOT)
-RESULTS_DIR = os.path.join(QUANT_DIR, "data")
-DEFAULT_MODEL = "opencode/deepseek-v4.1-flash-free"
+RESULTS_DIR = os.environ.get("STOCKINTEL_RESULTS_DIR", os.path.join(REPO_ROOT, "data"))
+DEFAULT_MODEL = "magpie/longcat/LongCat-2.5"
 BATCH_SIZE = 3
 MODEL_TIMEOUT = 240  # seconds per opencode call
 
