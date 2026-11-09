@@ -9,7 +9,7 @@
 #
 # 用法：bash deploy/run_daily.sh [YYYYMMDD]（默认当天，Asia/Shanghai）
 # 退出码：0 成功；1 复盘或组装失败（不写报告）；2 当日 verify 缺失（休市或选股任务未产出）。
-set -u
+set -euo pipefail
 
 QUANT_DIR="${QUANT_DIR:-/data/workspace/quant}"
 RESULTS_DIR="${RESULTS_DIR:-$QUANT_DIR/results/daily}"
