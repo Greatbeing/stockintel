@@ -33,7 +33,7 @@
 ```
 数据层（AkShare / 东财前复权，verify JSON 为唯一事实源）
   → 信号层（Buy3 / sell1、MA233、golden 等确定性规则）
-  → LLM 点评层（llm/review_lean.py，DeepSeek 免费模型，只写文字）
+  → LLM 点评层（llm/review_lean.py，Nemotron 免费模型（NVIDIA NIM 经 Magpie），只写文字）
   → 报告层（report/build_report.py，纯组装，不调模型）
 ```
 

@@ -221,6 +221,10 @@ def review_facts(review_text, holdings):
         "ma_mismatches": [],
         "dist_mismatches": [],
         "daily_mismatches": [],
+        "n_close": 0,
+        "n_ma": 0,
+        "n_dist": 0,
+        "n_daily": 0,
     }
     # 每个【代码】到下一个【代码】之间为一个正文块
     parsed = {}
@@ -238,20 +242,32 @@ def review_facts(review_text, holdings):
         day = daily_pct(stock)
 
         match = re.search(r"收盘\s*([0-9]+(?:\.[0-9]+)?)", block)
-        if match and close is not None and abs(float(match.group(1)) - close) > 0.005:
-            facts["close_mismatches"].append((code, match.group(1), close))
+        if match:
+            facts["n_close"] += 1
+            if close is not None and abs(float(match.group(1)) - close) > 0.005:
+                facts["close_mismatches"].append((code, match.group(1), close))
 
-        match = re.search(r"MA233（([0-9]+(?:\.[0-9]+)?)）", block)
-        if match and ma233 is not None and abs(float(match.group(1)) - ma233) > 0.02:
-            facts["ma_mismatches"].append((code, match.group(1), round(ma233, 2)))
+        # 兼容两种写法：示例/手写体「MA233（10.00）上方 5.00%」，以及模型复述数据行的「MA233 上方 5.00%」「MA233 10.00 上方」
+        match = re.search(r"MA233（([0-9]+(?:\.[0-9]+)?)）", block) or re.search(
+            r"MA233\s+([0-9]+(?:\.[0-9]+)?)\s*(?:上方|下方)", block
+        )
+        if match:
+            facts["n_ma"] += 1
+            if ma233 is not None and abs(float(match.group(1)) - ma233) > 0.02:
+                facts["ma_mismatches"].append((code, match.group(1), round(ma233, 2)))
 
-        match = re.search(r"MA233（[0-9.]+）\s*(上方|下方)\s*(-?[0-9]+(?:\.[0-9]+)?)%", block)
-        if match and dist is not None:
-            signed = abs(float(match.group(2))) if match.group(1) == "上方" else -abs(float(match.group(2)))
-            if abs(signed - dist) > 0.06:
-                facts["dist_mismatches"].append((code, match.group(0), dist))
+        match = re.search(r"MA233（[0-9.]+）\s*(上方|下方)\s*(-?[0-9]+(?:\.[0-9]+)?)%", block) or re.search(
+            r"MA233\s*(?:[0-9]+(?:\.[0-9]+)?\s*)?(上方|下方)\s*(-?[0-9]+(?:\.[0-9]+)?)%", block
+        )
+        if match:
+            facts["n_dist"] += 1
+            if dist is not None:
+                signed = abs(float(match.group(2))) if match.group(1) == "上方" else -abs(float(match.group(2)))
+                if abs(signed - dist) > 0.06:
+                    facts["dist_mismatches"].append((code, match.group(0), dist))
 
         for match in re.finditer(r"单日\s*([+-]?[0-9]+(?:\.[0-9]+)?)%", block):
+            facts["n_daily"] += 1
             if abs(float(match.group(1)) - day) > 0.06:
                 facts["daily_mismatches"].append((code, match.group(1), round(day, 2)))
 
@@ -274,6 +290,12 @@ def review_facts(review_text, holdings):
             facts["daily_label_mismatches"].append(
                 (code, str(stock.get("name")), float(match.group(1)), round(day, 2), unreal)
             )
+    facts["mismatches_count"] = (
+        len(facts["close_mismatches"])
+        + len(facts["ma_mismatches"])
+        + len(facts["dist_mismatches"])
+        + len(facts["daily_mismatches"])
+    )
     return facts
 
 
@@ -379,6 +401,7 @@ def build_report(cfg, verify, review_text, signals_rows, pending_rows, logger):
         checks.append(
             "review 覆盖：%d 只持仓在 review 中均有且仅有一个【代码】段落，无缺漏、无重复。" % len(holdings)
         )
+    n_compared = facts["n_close"] + facts["n_ma"] + facts["n_dist"] + facts["n_daily"]
     if facts["close_mismatches"] or facts["ma_mismatches"] or facts["dist_mismatches"] or facts["daily_mismatches"]:
         issues.append(
             "review 行情数字与 verify 不一致：收盘 %s；MA233 %s；距 MA233 %s；单日 %s。"
@@ -389,8 +412,15 @@ def build_report(cfg, verify, review_text, signals_rows, pending_rows, logger):
                 facts["daily_mismatches"] or "无",
             )
         )
+    elif n_compared == 0:
+        issues.append(
+            "review 行情数字：未能从 review 文本解析出可核对数字（写法与自查正则不匹配），本项未核对，请人工检查。"
+        )
     else:
-        checks.append("review 行情数字：收盘、MA233、距 MA233、单日涨跌均可与 verify 对上（容差内）。")
+        checks.append(
+            "review 行情数字：收盘 %d 处、MA233 %d 处、距 MA233 %d 处、单日涨跌 %d 处均与 verify 对上（容差内）。"
+            % (facts["n_close"], facts["n_ma"], facts["n_dist"], facts["n_daily"])
+        )
 
     # ---------- buy_signals pending ----------
     if signals_rows is None:
