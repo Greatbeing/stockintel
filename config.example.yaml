@@ -21,3 +21,9 @@ output:
 model:
   name: magpie/nvidia/nvidia/nemotron-3-ultra-550b-a55b
   used_in_m1: false
+
+# 风险提示阈值（可选；不写则用缺省 2 / 6 / 20）
+# risk:
+#   near_ma233_pct: 2    # 距 MA233 正负多少个百分点以内列入名单
+#   daily_drop_pct: 6    # 单日跌幅达到多少列入名单
+#   loss_pct: 20         # 持仓浮亏达到多少列入名单

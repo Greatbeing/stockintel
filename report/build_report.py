@@ -322,6 +322,26 @@ def risk_table(items, include_stop=True):
     return "\n".join(lines) + "\n"
 
 
+def risk_thresholds(cfg):
+    """风险提示阈值，可由 config.yaml 的 risk 段覆盖；缺省沿用 v1 的 2 / 6 / 20。"""
+
+    def _get(name, default):
+        try:
+            raw = require(cfg, "risk.%s" % name, None)
+        except BuildError:
+            return default
+        value = as_float(raw)
+        if value is None:
+            raise BuildError("risk.%s must be a number, got %r" % (name, raw))
+        return value
+
+    return (
+        _get("near_ma233_pct", 2.0),
+        _get("daily_drop_pct", 6.0),
+        _get("loss_pct", 20.0),
+    )
+
+
 def build_report(cfg, verify, review_text, signals_rows, pending_rows, logger):
     quant_root = Path(str(require(cfg, "quant_root", str)))
     date = str(require(cfg, "date", str))
@@ -336,6 +356,7 @@ def build_report(cfg, verify, review_text, signals_rows, pending_rows, logger):
     non_holdings = [x for x in verify if x.get("holding_now") is not True]
     if not holdings:
         raise BuildError("verify file has no holding_now=true records")
+    near_pct, drop_pct, loss_pct = risk_thresholds(cfg)
 
     # ---------- 逐只数字与计数 ----------
     daily = {}
@@ -454,12 +475,12 @@ def build_report(cfg, verify, review_text, signals_rows, pending_rows, logger):
     # ---------- 风险名单（全部来自 verify 数字） ----------
     stop_items = [(x, daily[str(x["code"])]) for x in holdings if x.get("stop_pending") is True]
     near_items = [(x, daily[str(x["code"])]) for x in holdings
-                  if abs(as_float(x["dist_pct"])) <= 2.0]
+                  if abs(as_float(x["dist_pct"])) <= near_pct]
     drop_items = [(x, daily[str(x["code"])]) for x in holdings
-                  if daily[str(x["code"])] <= -6.0]
+                  if daily[str(x["code"])] <= -drop_pct]
     loss_items = [(x, daily[str(x["code"])]) for x in holdings
                   if as_float(x.get("unreal")) is not None
-                  and as_float(x.get("unreal")) <= -20.0]
+                  and as_float(x.get("unreal")) <= -loss_pct]
 
     # 口径差异：review 的「入场以来」按 prev_entry_price 计算；verify.unreal 对当日执行的 pending 按 exec_price。
     entry_basis_codes = [c for c, _n, _v, _u, _pe, _ex, _claim in facts["entry_basis_diffs"]]
@@ -476,7 +497,7 @@ def build_report(cfg, verify, review_text, signals_rows, pending_rows, logger):
         review_basis_loss = [
             (code, name, value)
             for code, name, value, _u, _pe, _ex, _claim in facts["entry_basis_diffs"]
-            if value <= -20.0
+            if value <= -loss_pct
         ]
         note = (
             "review「入场以来浮盈」用 prev_entry_price 计算，verify.unreal 对当日执行的 pending 用 exec_price；"
@@ -485,9 +506,9 @@ def build_report(cfg, verify, review_text, signals_rows, pending_rows, logger):
         )
         if review_basis_loss:
             note += (
-                " 若按 review 口径，%s 会进入「浮亏≤-20%%」清单；"
+                " 若按 review 口径，%s 会进入「浮亏≤-%g%%」清单；"
                 "本报告使用 verify.unreal，未列入。"
-                % "、".join("%s %s %s" % (c, n, fmt_pct(v)) for c, n, v in review_basis_loss)
+                % ("、".join("%s %s %s" % (c, n, fmt_pct(v)) for c, n, v in review_basis_loss), loss_pct)
             )
         issues.append(note)
 
@@ -616,15 +637,15 @@ def build_report(cfg, verify, review_text, signals_rows, pending_rows, logger):
     lines.append("")
     lines.append("- 计数：%d 只" % len(stop_items))
     lines.append(risk_table(stop_items))
-    lines.append("### 2. 距 MA233 正负 2% 以内（|dist_pct| ≤ 2）")
+    lines.append("### 2. 距 MA233 正负 %g%% 以内（|dist_pct| ≤ %g）" % (near_pct, near_pct))
     lines.append("")
     lines.append("- 计数：%d 只" % len(near_items))
     lines.append(risk_table(near_items))
-    lines.append("### 3. 单日跌幅 ≥ 6%（由 close/prev_close 重算）")
+    lines.append("### 3. 单日跌幅 ≥ %g%%（由 close/prev_close 重算）" % drop_pct)
     lines.append("")
     lines.append("- 计数：%d 只" % len(drop_items))
     lines.append(risk_table(drop_items))
-    lines.append("### 4. 浮亏 ≤ -20%（verify.unreal 口径）")
+    lines.append("### 4. 浮亏 ≤ -%g%%（verify.unreal 口径）" % loss_pct)
     lines.append("")
     lines.append("- 计数：%d 只" % len(loss_items))
     lines.append(risk_table(loss_items))

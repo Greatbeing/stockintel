@@ -123,6 +123,41 @@ class EndToEndTest(_CfgMixin, unittest.TestCase):
             self.assertNotIn("dist_pct 重算不一致", report)
 
 
+class ThresholdTest(_CfgMixin, unittest.TestCase):
+    VERIFY = make_verify()
+
+    def test_default_thresholds(self):
+        near, drop, loss = build_report.risk_thresholds(self.cfg("x"))
+        self.assertEqual((near, drop, loss), (2.0, 6.0, 20.0))
+
+    def test_custom_thresholds(self):
+        cfg = self.cfg("x")
+        cfg["risk"] = {"near_ma233_pct": 5, "daily_drop_pct": 3, "loss_pct": 10}
+        near, drop, loss = build_report.risk_thresholds(cfg)
+        self.assertEqual((near, drop, loss), (5.0, 3.0, 10.0))
+
+    def test_bad_threshold_raises(self):
+        cfg = self.cfg("x")
+        cfg["risk"] = {"daily_drop_pct": "abc"}
+        with self.assertRaises(build_report.BuildError):
+            build_report.risk_thresholds(cfg)
+
+    def test_custom_threshold_changes_risk_lists(self):
+        """示例 B：单日 -10%、浮亏 -25%、距 MA233 -10%——收紧阈值后应从风险名单消失。"""
+        cfg = self.cfg("x", output_name="out.md")
+        cfg["risk"] = {"near_ma233_pct": 5, "daily_drop_pct": 15, "loss_pct": 30}
+        review = (EXAMPLES / "review_example.md").read_text(encoding="utf-8")
+        rows, pending = build_report.load_buy_signals(EXAMPLES / "buy_signals_example.csv")
+        report, _p, _d = build_report.build_report(cfg, self.VERIFY, review, rows, pending, _NullLogger())
+        self.assertIn("单日跌幅 ≥ 15%", report)
+        self.assertIn("浮亏 ≤ -30%", report)
+        # -10% 跌幅 < 15% 阈值 → 600002 不应出现在「单日跌幅」名单；-25% 浮亏 > -30% 亦然
+        drop_section = report.split("### 3.")[1].split("###")[0]
+        loss_section = report.split("### 4.")[1].split("###")[0]
+        self.assertIn("名单：无", drop_section)
+        self.assertIn("名单：无", loss_section)
+
+
 class _NullLogger:
     """测试用的空日志器。"""
 
