@@ -1,7 +1,8 @@
 # stockintel 示例配置：跑通 examples/ 里 3 只 synthetic 数据
 # 运行（在仓库根目录）：
 #   python3 report/build_report.py --config examples/config.yaml
-# 输出：examples/report_example.md
+# 输出：examples/.build/report.md（gitignored，不覆盖静态样本）
+# 静态样本见 examples/report_example.md；两者一致性由 tests/test_example_golden.py 守护
 
 project: stockintel
 version: M1
@@ -14,7 +15,7 @@ inputs:
   buy_signals: buy_signals_example.csv
 
 output:
-  report: report_example.md
+  report: .build/report.md
   log: logs/build.log
 
 model:

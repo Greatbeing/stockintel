@@ -675,6 +675,7 @@ def build_report(cfg, verify, review_text, signals_rows, pending_rows, logger):
 def main(argv=None):
     parser = argparse.ArgumentParser(description="stockintel M1 daily report builder (assembly only)")
     parser.add_argument("--config", default=str(DEFAULT_CONFIG), help="config.yaml path")
+    parser.add_argument("--out", default=None, help="override output.report path (keeps committed samples untouched)")
     args = parser.parse_args(argv)
 
     logger = BuildLogger(BASE_DIR / "logs" / "build.log")
@@ -682,6 +683,8 @@ def main(argv=None):
     try:
         logger.info("step 1/7 读取配置: %s" % args.config)
         cfg = load_config(args.config)
+        if args.out:
+            cfg.setdefault("output", {})["report"] = args.out
         date = str(require(cfg, "date", str))
         if len(date) != 8 or not date.isdigit():
             raise BuildError("config date must be YYYYMMDD, got %r" % date)

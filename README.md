@@ -1,5 +1,10 @@
 # stockintel — 完全免费的 A 股智能分析系统
 
+[![CI](https://github.com/Greatbeing/stockintel/actions/workflows/ci.yml/badge.svg)](https://github.com/Greatbeing/stockintel/actions/workflows/ci.yml)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-yellow)](LICENSE)
+[![deps: stdlib only](https://img.shields.io/badge/deps-stdlib%20only-brightgreen)](docs/FREE.md)
+
 > 由 dsh-superagent 协助维护
 
 每天一份 A 股日报：确定性信号 + LLM 文字点评，全程零付费。
@@ -67,12 +72,22 @@ python3 report/build_report.py
 
 ```bash
 python3 report/build_report.py --config examples/config.yaml
-# 输出：examples/report_example.md
+# 输出：examples/.build/report.md（gitignored）
 ```
 
 ## 示例输出
 
-见 [examples/report_example.md](examples/report_example.md)：3 只示例持仓的日报，含概览、复盘、待执行、风险提示、待核对五部分。
+见 [examples/report_example.md](examples/report_example.md)：3 只示例持仓的日报，含概览、复盘、待执行、风险提示、待核对五部分。概览节选：
+
+```text
+## 一、今日概览
+- 持仓数量：**3 只**（verify JSON 共 3 条，非持仓 0 条）。
+- MA233 位置：上方 **2 只** / 下方 **1 只** / 持平 **0 只**。
+- 单日涨跌：上涨 2 只 / 下跌 1 只 / 平盘 0 只；最大涨幅 **+5.00%**（600001 示例A），
+  最大跌幅 **-10.00%**（600002 示例B）。
+```
+
+数字全部来自 verify JSON，组装器逐只复核；对不上的进「待核对」，不猜测。示例输出与组装器的一致性由 [tests/test_example_golden.py](tests/test_example_golden.py) 守护。
 
 ## 已知限制
 
@@ -85,6 +100,11 @@ python3 report/build_report.py --config examples/config.yaml
 
 - 复盘结构思路借鉴 [ZhuLinsen/daily_stock_analysis](https://github.com/ZhuLinsen/daily_stock_analysis)
 - 行情数据来自 [AkShare](https://github.com/akfamily/akshare)
+
+## 文档与贡献
+
+- [架构](docs/ARCHITECTURE.md) · [为什么免费](docs/FREE.md) · [故障排查](docs/TROUBLESHOOTING.md)
+- 想改进？先读 [CONTRIBUTING.md](CONTRIBUTING.md)——含不可动摇的诚信边界（LLM 永不做交易信号、verify 唯一事实源、零依赖、额度耗尽即停）。
 
 ## License
 
